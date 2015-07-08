@@ -9,7 +9,7 @@
     var running = false;
 
     // TODO: Dodaj ostale reci
-    var upitnereci = ['kako', 'gde', 'zašto', 'kada', 'koliko', 'da li', 'ko je', 'ko su'];
+    var upitnereci = ['kako', 'gde', 'zašto', 'kada', 'koliko', 'ko je', 'ko su'];
 
     var startSpeech = function() {
       if (running) {
