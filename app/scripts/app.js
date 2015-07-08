@@ -32,9 +32,14 @@
       console.log(voice.recognition);
       console.log(event.detail.result);
       this.result = event.detail.result;
-      for (var i = 0; i < upitnereci.length; i++) {
-        if (this.result.search(upitnereci[i]) === 0) {
-          this.result += '?';
+      var reci = this.result.split(' ');
+      if (reci[1] == 'li') {
+        this.result += '?';
+      } else {
+        for (var i = 0; i < upitnereci.length; i++) {
+          if (this.result.search(upitnereci[i]) === 0) {
+            this.result += '?';
+          }
         }
       }
       voice.text = '';
