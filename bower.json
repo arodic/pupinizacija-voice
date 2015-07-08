@@ -1,0 +1,21 @@
+{
+  "name": "pupinizacija-voice",
+  "version": "0.0.0",
+  "homepage": "https://github.com/arodic/pupinizacija-voice",
+  "authors": [
+    "Aki Rodic <aleksandar.xyz@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "voice-elements": "zenorocha/voice-elements#~1.0.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#1.0.2",
+    "platinum-sw": "PolymerElements/platinum-sw#1.0.2"
+  }
+}
