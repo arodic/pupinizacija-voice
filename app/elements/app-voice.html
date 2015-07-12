@@ -12,6 +12,7 @@
 (function () {
 
   var upitnereci = ['kako', 'gde', 'zašto', 'kada', 'koliko', 'ko je', 'ko su'];
+  var running = false;
 
   Polymer({
     is: 'app-voice',
@@ -23,7 +24,6 @@
     },
     ready: function () {
       var voice = this.$.webspeech;
-      var running = false;
 
       this.result = 'Pritisni dugme!';
 
@@ -42,7 +42,7 @@
       };
 
       document.addEventListener('keydown', startSpeech);
-      // document.addEventListener('keyup', endSpeech);
+      document.addEventListener('_keyup', endSpeech);
     },
     onResult: function () {
       console.log(this.$.webspeech.recognition, event.detail.result);

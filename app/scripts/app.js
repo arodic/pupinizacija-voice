@@ -1,7 +1,5 @@
 (function(document) {
 
-  'use strict';
-
   var app = document.querySelector('#app');
   app.width = (window.innerWidth - 12);
   app.height = Math.floor(app.width / 2);
@@ -11,14 +9,14 @@
   window.addEventListener('resize', function() {
     app.width = (window.innerWidth - 12);
     app.height = Math.floor(app.width / 2);
-  })
+  });
 
   app.onResultChanged = function (event) {
     this.$.animation.addAnimation(this.scene, event.detail.value);
-  }
+  };
   app.onAnimationChanged = function (event) {
     this.$.viewport.render();
-  }
+  };
 
   app.addEventListener('dom-change', function() {
     this.$.viewport.scene = app.scene;

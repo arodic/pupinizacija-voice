@@ -97,6 +97,9 @@ gulp.task('copy', function () {
   var elements = gulp.src(['app/elements/**/*.html'])
     .pipe(gulp.dest('dist/elements'));
 
+  var elements = gulp.src(['app/scripts/**/*.js'])
+    .pipe(gulp.dest('dist/scripts'));
+
   var swBootstrap = gulp.src(['bower_components/platinum-sw/bootstrap/*.js'])
     .pipe(gulp.dest('dist/elements/bootstrap'));
 
@@ -212,34 +215,12 @@ gulp.task('serve', ['styles', 'elements', 'images'], function () {
   gulp.watch(['app/images/**/*'], reload);
 });
 
-// Build and serve the output from the dist build
-gulp.task('serve:dist', ['default'], function () {
-  browserSync({
-    notify: false,
-    logPrefix: 'PSK',
-    snippetOptions: {
-      rule: {
-        match: '<span id="browser-sync-binding"></span>',
-        fn: function (snippet) {
-          return snippet;
-        }
-      }
-    },
-    // Run as an https by uncommenting 'https: true'
-    // Note: this uses an unsigned certificate which on first access
-    //       will present a certificate warning in the browser.
-    // https: true,
-    server: 'dist',
-    middleware: [ historyApiFallback() ]
-  });
-});
-
 // Build Production Files, the Default Task
 gulp.task('default', ['clean'], function (cb) {
   runSequence(
     ['copy', 'styles'],
     'elements',
-    ['jshint', 'images', 'fonts', 'html'],
+    // ['jshint', 'images', 'fonts', 'html'],
     'vulcanize',
     cb);
     // Note: add , 'precache' , after 'vulcanize', if your are going to use Service Worker
