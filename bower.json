@@ -16,6 +16,13 @@
   "dependencies": {
     "voice-elements": "zenorocha/voice-elements#~1.0.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#1.0.2",
-    "platinum-sw": "PolymerElements/platinum-sw#1.0.2"
+    "platinum-sw": "PolymerElements/platinum-sw#1.0.2",
+    "three-viewport": "arodic/three-viewport#master",
+    "three-renderer": "arodic/three-renderer#master"
+  },
+  "resolutions": {
+    "three-renderer": "master",
+    "io-options": "master",
+    "io-menu": "master"
   }
 }

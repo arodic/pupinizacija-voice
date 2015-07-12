@@ -1,9 +1,12 @@
 body {
-  background: #fafafa;
+  background: #222222;
   font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #333;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
 }
 
-#textresult {
-  font-size: 4rem;
+#viewport {
+  margin: 6px;
 }

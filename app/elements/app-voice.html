@@ -1,0 +1,76 @@
+<dom-module id="app-voice">
+  <template>
+    <voice-recognition id="webspeech"
+        on-result="onResult"
+        on-end="onEnd"
+        on-start="onStart"
+        on-error="onError">
+    </voice-recognition>
+  </template>
+</dom-module>
+<script>
+(function () {
+
+  var upitnereci = ['kako', 'gde', 'zašto', 'kada', 'koliko', 'ko je', 'ko su'];
+
+  Polymer({
+    is: 'app-voice',
+    properties: {
+      result: {
+        type: String,
+        notify: true
+      }
+    },
+    ready: function () {
+      var voice = this.$.webspeech;
+      var running = false;
+
+      this.result = 'Pritisni dugme!';
+
+      // TODO: Dodaj ostale reci
+
+      var startSpeech = function() {
+        if (running) {
+          return;
+        }
+        voice.recognition.lang = 'sr';
+        voice.start();
+      };
+
+      var endSpeech = function() {
+        voice.stop();
+      };
+
+      document.addEventListener('keydown', startSpeech);
+      // document.addEventListener('keyup', endSpeech);
+    },
+    onResult: function () {
+      console.log(this.$.webspeech.recognition, event.detail.result);
+      this.result = event.detail.result;
+      var reci = this.result.split(' ');
+      if (reci[1] === 'li') {
+        this.result += '?';
+      } else {
+        for (var i = 0; i < upitnereci.length; i++) {
+          if (this.result.search(upitnereci[i]) === 0) {
+            this.result += '?';
+          }
+        }
+      }
+      this.$.webspeech.text = '';
+    },
+    onEnd: function () {
+      this.result = 'Slušanje prekinuto.';
+      running = false;
+    },
+    onStart: function () {
+      this.result = 'Slušam...';
+      running = true;
+    },
+    onError: function () {
+      this.result = 'Greška u slušanju.';
+      running = false;
+    }
+  });
+}());
+</script>

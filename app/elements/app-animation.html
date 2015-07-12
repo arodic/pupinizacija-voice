@@ -1,0 +1,54 @@
+<script src="../scripts/TextHelper.js"></script>
+
+<dom-module id="app-animation">
+</dom-module>
+<script>
+(function () {
+
+  var animations = [];
+
+  var Animation = function (word) {
+    THREE.TextHelper.call(this, word);
+    this.position.y = 1.5;
+
+    this.update = function() {
+      this.position.z -= 0.1;
+      this.material.opacity *= 0.995;
+      if (this.position.z < -100) {
+        animations.splice(animations.indexOf(this), 1);
+        this.parent.remove(this);
+      }
+    };
+  };
+
+  Animation.prototype = Object.create(THREE.TextHelper.prototype);
+  Animation.prototype.constructor = Animation;
+
+  Polymer({
+    is: 'app-animation',
+    properties: {
+      scene: {
+        value: new THREE.Scene(),
+        type: THREE.Scene
+      }
+    },
+    ready: function () {
+      this.loop();
+    },
+    loop: function () {
+      this.fire('animation-frame-changed');
+      for(var i = 0; i < animations.length; i++) {
+        animations[i].update();
+      }
+      requestAnimationFrame(this.loop.bind(this));
+    },
+    addAnimation: function (scene, word) {
+      console.log('start', word);
+
+      var animation = new Animation(word);
+      scene.add(animation);
+      animations.push(animation);
+    }
+  });
+}());
+</script>

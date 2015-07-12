@@ -43,10 +43,22 @@
   <span id="browser-sync-binding"></span>
 
   <template is="dom-bind" id="app">
-    <voice-recognition id="webspeech" on-result="onResult" on-end="onEnd" on-start="onStart" on-error="onError"></voice-recognition>
-    <span id="textresult">{{result}}</span>
+    <three-viewport id="viewport"
+        show-helpers
+        show-grid
+        grid-size="2"
+        grid-width="100"
+        width="{{width}}"
+        height="{{height}}"
+        background="black"
+        grid-color1="skyblue">
+    </three-viewport>
+    <app-voice id="voice"
+        on-result-changed="onResultChanged"></app-voice>
+    <app-animation id="animation"
+        on-animation-frame-changed="onAnimationChanged"></app-animation>
   </template>
-  
+
   <!-- build:js scripts/app.js -->
   <script src="scripts/app.js"></script>
   <!-- endbuild-->
