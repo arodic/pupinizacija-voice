@@ -1,3 +1,5 @@
+<script src="../scripts/cyrlatconverter-v0.6.1.js"></script>
+
 <dom-module id="app-voice">
   <template>
     <voice-recognition id="webspeech"
@@ -9,10 +11,11 @@
   </template>
 </dom-module>
 <script>
-(function () {
+(function (THREE) {
 
   var upitnereci = ['kako', 'gde', 'zašto', 'kada', 'koliko', 'ko je', 'ko su'];
   var running = false;
+  var result;
 
   Polymer({
     is: 'app-voice',
@@ -25,7 +28,7 @@
     ready: function () {
       var voice = this.$.webspeech;
 
-      this.result = 'Pritisni dugme!';
+      this.result = replaceL2C('Pritisni dugme!');
 
       // TODO: Dodaj ostale reci
 
@@ -46,31 +49,32 @@
     },
     onResult: function () {
       console.log(this.$.webspeech.recognition, event.detail.result);
-      this.result = event.detail.result;
-      var reci = this.result.split(' ');
+      result = event.detail.result;
+      var reci = result.split(' ');
       if (reci[1] === 'li') {
-        this.result += '?';
+        result += '?';
       } else {
         for (var i = 0; i < upitnereci.length; i++) {
-          if (this.result.search(upitnereci[i]) === 0) {
-            this.result += '?';
+          if (result.search(upitnereci[i]) === 0) {
+            result += '?';
           }
         }
       }
+      this.result = replaceL2C(result);
       this.$.webspeech.text = '';
     },
     onEnd: function () {
-      this.result = 'Slušanje prekinuto.';
+      this.result = replaceL2C('Slušanje prekinuto.');
       running = false;
     },
     onStart: function () {
-      this.result = 'Slušam...';
+      this.result = replaceL2C('Slušam...');
       running = true;
     },
     onError: function () {
-      this.result = 'Greška u slušanju.';
+      this.result = replaceL2C('Greška u slušanju.');
       running = false;
     }
   });
-}());
+}(THREE));
 </script>

@@ -1,4 +1,4 @@
-(function(document) {
+(function(document, THREE) {
 
   var app = document.querySelector('#app');
   app.width = (window.innerWidth - 12);
@@ -14,7 +14,7 @@
   app.onResultChanged = function (event) {
     this.$.animation.addAnimation(this.scene, event.detail.value);
   };
-  app.onAnimationChanged = function (event) {
+  app.onAnimationChanged = function () {
     this.$.viewport.render();
   };
 
@@ -27,4 +27,4 @@
     camera.lookAt(camera._target);
   });
 
-})(document);
+})(document, THREE);

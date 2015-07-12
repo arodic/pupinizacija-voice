@@ -6,6 +6,8 @@
  * @param options.align text alignment ('left' | 'right' | 'center')
  */
 
+var THREE = THREE || {};
+
 THREE.TextHelper = function ( label, options ) {
 
     options = options || {};
@@ -53,11 +55,11 @@ THREE.TextHelper = function ( label, options ) {
 
     this.type = 'textHelper';
 
-    if (options.align == 'left') {
+    if (options.align === 'left') {
 
         this.position.x = - options.size * aspect / 2;
 
-    } else if (options.align == 'right') {
+    } else if (options.align === 'right') {
 
         this.position.x = options.size * aspect / 2;
 

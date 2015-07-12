@@ -55,30 +55,6 @@ gulp.task('elements', function () {
   return styleTask('elements', ['**/*.css']);
 });
 
-// Lint JavaScript
-gulp.task('jshint', function () {
-  return gulp.src([
-      'app/scripts/**/*.js',
-      'app/elements/**/*.js',
-      'app/elements/**/*.html'
-    ])
-    .pipe(reload({stream: true, once: true}))
-    .pipe($.jshint.extract()) // Extract JS from .html files
-    .pipe($.jshint())
-    .pipe($.jshint.reporter('jshint-stylish'))
-    .pipe($.if(!browserSync.active, $.jshint.reporter('fail')));
-});
-
-// Optimize Images
-gulp.task('images', function () {
-  return gulp.src('app/images/**/*')
-    .pipe($.cache($.imagemin({
-      progressive: true,
-      interlaced: true
-    })))
-    .pipe(gulp.dest('dist/images'))
-    .pipe($.size({title: 'images'}));
-});
 
 // Copy All Files At The Root Level (app)
 gulp.task('copy', function () {
@@ -98,6 +74,9 @@ gulp.task('copy', function () {
     .pipe(gulp.dest('dist/elements'));
 
   var elements = gulp.src(['app/scripts/**/*.js'])
+    .pipe(gulp.dest('dist/scripts'));
+
+  var elements = gulp.src(['app/scripts/**/*.json'])
     .pipe(gulp.dest('dist/scripts'));
 
   var swBootstrap = gulp.src(['bower_components/platinum-sw/bootstrap/*.js'])
@@ -220,7 +199,7 @@ gulp.task('default', ['clean'], function (cb) {
   runSequence(
     ['copy', 'styles'],
     'elements',
-    // ['jshint', 'images', 'fonts', 'html'],
+    ['fonts', 'html'],
     'vulcanize',
     cb);
     // Note: add , 'precache' , after 'vulcanize', if your are going to use Service Worker
