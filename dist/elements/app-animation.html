@@ -32,19 +32,12 @@
         type: THREE.Scene
       }
     },
-    ready: function () {
-      this.loop();
-    },
-    loop: function () {
-      this.fire('animation-frame-changed');
+    update: function () {
       for(var i = 0; i < animations.length; i++) {
         animations[i].update();
       }
-      requestAnimationFrame(this.loop.bind(this));
     },
     addAnimation: function (scene, word) {
-      console.log('start', word);
-
       var animation = new Animation(word);
       scene.add(animation);
       animations.push(animation);
