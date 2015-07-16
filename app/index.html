@@ -44,14 +44,9 @@
 
   <template is="dom-bind" id="app">
     <three-viewport id="viewport"
-        show-helpers
-        show-grid
-        grid-size="2"
-        grid-width="100"
         width="{{width}}"
         height="{{height}}"
-        background="black"
-        grid-color1="skyblue">
+        background="black">
     </three-viewport>
     <app-voice id="voice"
         on-result-changed="onResultChanged"></app-voice>

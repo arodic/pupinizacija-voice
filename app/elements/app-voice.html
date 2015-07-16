@@ -17,16 +17,47 @@
   var running = false;
   var result;
 
+  window.AudioContext = window.AudioContext ||
+                        window.webkitAudioContext;
+  navigator.getUserMedia = navigator.getUserMedia ||
+                           navigator.webkitGetUserMedia
+
+  var context = new AudioContext();
+  var analyser, voice, stream, microphone, source;
+  var binCount, levelBins;
+
+  var freqByteData = new Uint8Array(512);
+  var timeByteData = new Uint8Array(512);
+
+  var freqDataTexture = new THREE.DataTexture( timeByteData, 512, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
+  freqDataTexture.wrapS = THREE.RepeatWrapping;
+  freqDataTexture.wrapT = THREE.RepeatWrapping;
+  freqDataTexture.anisotropy = 6;
+
   Polymer({
     is: 'app-voice',
     properties: {
       result: {
         type: String,
         notify: true
+      },
+      freqDataTexture: {
+        type: THREE.DataTexture,
+        value: freqDataTexture
+      }
+    },
+    update: function () {
+      if (analyser) {
+        analyser.getByteFrequencyData(freqByteData);
+    		analyser.getByteTimeDomainData(timeByteData); // <-- waveform
+        this.freqDataTexture.needsUpdate = true;
       }
     },
     ready: function () {
-      var voice = this.$.webspeech;
+
+      var scope = this;
+
+      voice = this.$.webspeech;
 
       this.result = replaceL2C('Pritisni dugme!');
 
@@ -38,17 +69,30 @@
         }
         voice.recognition.lang = 'sr';
         voice.start();
+
+        navigator.getUserMedia({audio: true}, function(str) {
+          stream = str;
+          microphone = context.createMediaStreamSource(str);
+          source = context.createBufferSource();
+					analyser = context.createAnalyser();
+					analyser.fftSize = 1024;
+					analyser.smoothingTimeConstant = 0.3;
+					microphone.connect(analyser);
+        }, function () {
+          scope.result = replaceL2C('Greska u aktiviranju mikrofona!');
+        });
+
       };
 
       var endSpeech = function() {
         voice.stop();
+        stream.stop();
       };
 
       document.addEventListener('keydown', startSpeech);
       document.addEventListener('_keyup', endSpeech);
     },
     onResult: function () {
-      console.log(this.$.webspeech.recognition, event.detail.result);
       result = event.detail.result;
       var reci = result.split(' ');
       if (reci[1] === 'li') {
@@ -65,6 +109,8 @@
     },
     onEnd: function () {
       this.result = replaceL2C('Slušanje prekinuto.');
+      voice.stop();
+      stream.stop();
       running = false;
     },
     onStart: function () {
@@ -73,6 +119,8 @@
     },
     onError: function () {
       this.result = replaceL2C('Greška u slušanju.');
+      voice.stop();
+      stream.stop();
       running = false;
     }
   });

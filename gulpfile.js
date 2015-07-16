@@ -161,7 +161,7 @@ gulp.task('precache', function (callback) {
 gulp.task('clean', del.bind(null, ['.tmp', 'dist']));
 
 // Watch Files For Changes & Reload
-gulp.task('serve', ['styles', 'elements', 'images'], function () {
+gulp.task('serve', ['styles', 'elements'], function () {
   browserSync({
     notify: false,
     logPrefix: 'PSK',
@@ -190,7 +190,6 @@ gulp.task('serve', ['styles', 'elements', 'images'], function () {
   gulp.watch(['app/scripts/**/*.js'], reload);
   gulp.watch(['app/styles/**/*.css'], ['styles', reload]);
   gulp.watch(['app/elements/**/*.css'], ['elements', reload]);
-  gulp.watch(['app/{scripts,elements}/**/*.js'], ['jshint']);
   gulp.watch(['app/images/**/*'], reload);
 });
 

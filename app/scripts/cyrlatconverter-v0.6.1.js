@@ -411,20 +411,20 @@
 
 					//if word shoult be doubleletters chained...
 					if (lat2CyrChained[c] && validDoubleChain) {
-						c2 = value[i + 1];
+						c2 = value[Number(i) + 1];
 						if (c2 && lat2CyrChained[c][c2]) {
-							value[i] = lat2CyrChained[c][c2];
-							value[i + 1] = '';
+							value[Number(i)] = lat2CyrChained[c][c2];
+							value[Number(i) + 1] = '';
 							chainedFlag = true;
 						}
 					}
 
 					if (!chainedFlag) {
-						value[i] = (Lat2Cyr[c] && Lat2Cyr[c] !== '') ? Lat2Cyr[c] : c;
+						value[Number(i)] = (Lat2Cyr[c] && Lat2Cyr[c] !== '') ? Lat2Cyr[c] : c;
 					}
 				});
 
-				words[i] = value.join('');
+				words[Number(i)] = value.join('');
 			}
 
 		});
