@@ -1,4 +1,7 @@
-<script src="../scripts/TextHelper.js"></script>
+<script src="../scripts/droid_sans_regular.typeface.js"></script>
+<script src="../scripts/droid_sans_bold.typeface.js"></script>
+<script src="../scripts/droid_serif_regular.typeface.js"></script>
+<script src="../scripts/droid_serif_bold.typeface.js"></script>
 
 <dom-module id="app-animation">
 </dom-module>
@@ -8,20 +11,47 @@
   var animations = [];
 
   var Animation = function (word) {
-    THREE.TextHelper.call(this, word);
-    this.position.y = 1.5;
+    var geometry = new THREE.TextGeometry( word, {
+
+      size: 3,
+      height: 0.1,
+      curveSegments: 4,
+
+      font: "droid sans",
+      weight: "normal",
+      style: "normal",
+
+      bevelThickness: 0.1,
+      bevelSize: 0.15,
+      bevelEnabled: true,
+
+      // material: 0,
+      // extrudeMaterial: 1
+
+    });
+
+    var material = new THREE.MeshNormalMaterial();
+
+    THREE.Mesh.call(this, geometry, material);
+    // THREE.TextHelper.call(this, word);
+
+
+
+    this.position.y = 3.5;
+    this.position.z = 30;
+    this.position.x = -25;
 
     this.update = function() {
-      this.position.z -= 0.1;
-      this.material.opacity *= 0.995;
-      if (this.position.z < -100) {
+      this.position.x += 0.2;
+      if (this.position.x > 50) {
         animations.splice(animations.indexOf(this), 1);
         this.parent.remove(this);
       }
     };
   };
 
-  Animation.prototype = Object.create(THREE.TextHelper.prototype);
+  Animation.prototype = Object.create(THREE.Mesh.prototype);
+  // Animation.prototype = Object.create(THREE.TextHelper.prototype);
   Animation.prototype.constructor = Animation;
 
   Polymer({

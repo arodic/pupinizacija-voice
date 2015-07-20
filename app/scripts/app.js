@@ -28,16 +28,22 @@
 		vertexShader: [
 
 			"uniform sampler2D displace;",
+			"uniform sampler2D audio;",
 
 			"varying vec2 vUv;",
+			"varying float dist;",
 
 			"void main() {",
 
-      " vUv = uv * 50.0;",
+      " vUv = uv;",
 
-      " vec4 offset = texture2D( displace, uv );",
+      " dist = distance(uv * vec2(1.0, 0.5), vec2(0.35, 0.05));",
 
-      " vec4 mvPosition = modelViewMatrix * vec4( position + vec3(0.0, 0.0, 15.0 * pow(offset.r, 3.0)), 1.0 );",
+      " float audioColor = texture2D( audio, vec2(dist, 0.0) ).r;",
+
+      " float offset = texture2D( displace, uv ).r * 45.0 + audioColor;",
+
+      " vec4 mvPosition = modelViewMatrix * vec4( position + vec3(0.0, 0.0, offset), 1.0 );",
 
       " gl_Position = projectionMatrix * mvPosition;",
 
@@ -51,13 +57,14 @@
 			"uniform sampler2D audio;",
 
 			"varying vec2 vUv;",
+			"varying float dist;",
 
 			"void main() {",
 
-      " vec4 texelColor = texture2D( map, vUv );",
-      " vec4 audioColor = texture2D( audio, vUv );",
+      " vec4 texelColor = 15.0 * texture2D( map, vUv * vec2(150.0, 75.0) );",
+      " float audioColor = texture2D( audio, vec2(dist, 0.0) ).r;",
 
-			"	gl_FragColor = vec4( texelColor.rgb + 10.0 * (audioColor.rgb - vec3(0.5)), 1.0 );",
+			"	gl_FragColor = vec4( texelColor.rgb * (1.0 + 15.0 * audioColor), 1.0 );",
 
 			"}"
 
@@ -66,11 +73,11 @@
   });
 
   var terrain = new THREE.Mesh(
-    new THREE.PlaneBufferGeometry(150, 150, 50, 50),
+    new THREE.PlaneBufferGeometry(150, 75, 150, 75),
     terrainShader
   );
   terrain.rotation.x = - Math.PI / 2;
-  terrain.position.y = - 5;
+  terrain.position.y = 0;
 
   app.scene.add(terrain);
 
@@ -83,11 +90,7 @@
     this.$.animation.addAnimation(this.scene, event.detail.value);
   };
 
-
   var loop = function () {
-
-    terrainShader.uniforms.audio.value = app.$.voice.freqDataTexture;
-
     requestAnimationFrame(loop);
     app.$.animation.update();
     app.$.voice.update();
@@ -96,12 +99,14 @@
 
 
   app.addEventListener('dom-change', function() {
-    this.$.viewport.scene = app.scene;
 
+    this.$.viewport.scene = app.scene;
     var camera = this.$.viewport.camera;
     camera.fov = 90;
-    camera.position.set(0, 5, 10);
+    camera.position.set(0, 3, 40);
     camera.lookAt(camera._target);
+    // connect audio data texture;
+    terrainShader.uniforms.audio.value = app.$.voice.levelDataTexture;
     loop();
   });
 

@@ -16,6 +16,7 @@
   var upitnereci = ['kako', 'gde', 'zašto', 'kada', 'koliko', 'ko je', 'ko su'];
   var running = false;
   var result;
+  var sum, level, j;
 
   window.AudioContext = window.AudioContext ||
                         window.webkitAudioContext;
@@ -26,13 +27,31 @@
   var analyser, voice, stream, microphone, source;
   var binCount, levelBins;
 
-  var freqByteData = new Uint8Array(512);
-  var timeByteData = new Uint8Array(512);
+  var windowSize = 512;
+  var freqByteData = new Uint8Array(windowSize);
+  // var timeByteData = new Uint8Array(windowSize);
 
-  var freqDataTexture = new THREE.DataTexture( timeByteData, 512, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
-  freqDataTexture.wrapS = THREE.RepeatWrapping;
-  freqDataTexture.wrapT = THREE.RepeatWrapping;
-  freqDataTexture.anisotropy = 6;
+  var historyLength = 512;
+  var levelByteData = new Uint8Array(historyLength);
+
+  // var freqDataTexture = new THREE.DataTexture( freqByteData, windowSize, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
+  // freqDataTexture.wrapS = THREE.RepeatWrapping;
+  // freqDataTexture.wrapT = THREE.RepeatWrapping;
+  // freqDataTexture.anisotropy = 6;
+  //
+  // var timeDataTexture = new THREE.DataTexture( timeByteData, windowSize, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
+  // timeDataTexture.wrapS = THREE.RepeatWrapping;
+  // timeDataTexture.wrapT = THREE.RepeatWrapping;
+  // timeDataTexture.anisotropy = 6;
+
+  var levelDataTexture = new THREE.DataTexture( levelByteData, historyLength, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
+  levelDataTexture.wrapS = THREE.RepeatWrapping;
+  levelDataTexture.wrapT = THREE.RepeatWrapping;
+  levelDataTexture.anisotropy = 6;
+
+  // freqDataTexture.needsUpdate = true;
+  // timeDataTexture.needsUpdate = true;
+  levelDataTexture.needsUpdate = true;
 
   Polymer({
     is: 'app-voice',
@@ -41,16 +60,41 @@
         type: String,
         notify: true
       },
-      freqDataTexture: {
+      // freqDataTexture: {
+      //   type: THREE.DataTexture,
+      //   value: freqDataTexture
+      // },
+      // timeDataTexture: {
+      //   type: THREE.DataTexture,
+      //   value: timeDataTexture
+      // },
+      levelDataTexture: {
         type: THREE.DataTexture,
-        value: freqDataTexture
+        value: levelDataTexture
       }
     },
     update: function () {
       if (analyser) {
         analyser.getByteFrequencyData(freqByteData);
-    		analyser.getByteTimeDomainData(timeByteData); // <-- waveform
-        this.freqDataTexture.needsUpdate = true;
+    		// analyser.getByteTimeDomainData(timeByteData); // <-- waveform
+
+        //GET AVG LEVEL
+    		sum = 0;
+    		level = 0;
+    		for(j = 0; j < windowSize; j++) {
+    			sum += freqByteData[j];
+    		}
+    		level = sum / windowSize;
+
+        for(j = historyLength; j > 0; j--) {
+          levelByteData[j] = levelByteData[j - 1];
+    		}
+        levelByteData[0] = level;
+
+        // this.freqDataTexture.needsUpdate = true;
+        // this.timeDataTexture.needsUpdate = true;
+        this.levelDataTexture.needsUpdate = true;
+
       }
     },
     ready: function () {
