@@ -2,7 +2,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="description" content="">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
   <title>Pupinizacija Voice</title>
   <!-- Place favicon.ico in the `app/` directory -->
 
@@ -43,11 +43,11 @@
   <span id="browser-sync-binding"></span>
 
   <template is="dom-bind" id="app">
-    <three-viewport id="viewport"
+    <three-renderer id="renderer"
         width="{{width}}"
         height="{{height}}"
-        background="black">
-    </three-viewport>
+        clear-color="black">
+    </three-renderer>
     <app-voice id="voice"
         on-result-changed="onResultChanged"></app-voice>
     <app-animation id="animation"

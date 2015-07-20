@@ -134,7 +134,9 @@
       };
 
       document.addEventListener('keydown', startSpeech);
+      document.addEventListener('mousedown', startSpeech);
       document.addEventListener('_keyup', endSpeech);
+      document.addEventListener('_mouseup', endSpeech);
     },
     onResult: function () {
       result = event.detail.result;

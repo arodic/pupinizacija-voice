@@ -1,11 +1,14 @@
 (function(document, THREE) {
 
   var app = document.querySelector('#app');
-  app.width = (window.innerWidth - 12);
+  app.width = window.innerWidth;
   app.height = Math.floor(app.width / 2);
 
   app.scene = new THREE.Scene();
 
+  app.camera = new THREE.PerspectiveCamera(90, 2, 0.1, 1000);
+  app.camera.position.set(0, 3, 40);
+  app.camera.lookAt(new THREE.Vector3());
 
   // SCENE
   var terrainTexture = THREE.ImageUtils.loadTexture( "images/grid.png" );
@@ -82,7 +85,7 @@
   app.scene.add(terrain);
 
   window.addEventListener('resize', function() {
-    app.width = (window.innerWidth - 12);
+    app.width = window.innerWidth;
     app.height = Math.floor(app.width / 2);
   });
 
@@ -94,17 +97,14 @@
     requestAnimationFrame(loop);
     app.$.animation.update();
     app.$.voice.update();
-    app.$.viewport.render();
+    app.$.renderer.clear();
+    app.$.renderer.render(app.scene, app.camera);
   };
 
 
   app.addEventListener('dom-change', function() {
 
-    this.$.viewport.scene = app.scene;
-    var camera = this.$.viewport.camera;
-    camera.fov = 90;
-    camera.position.set(0, 3, 40);
-    camera.lookAt(camera._target);
+    // this.$.viewport.scene = app.scene;
     // connect audio data texture;
     terrainShader.uniforms.audio.value = app.$.voice.levelDataTexture;
     loop();
