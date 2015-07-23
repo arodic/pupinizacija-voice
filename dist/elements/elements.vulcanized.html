@@ -13866,28 +13866,15 @@ THREE.Shape.Utils.triangulateShape = (function() {
 
   var windowSize = 512;
   var freqByteData = new Uint8Array(windowSize);
-  // var timeByteData = new Uint8Array(windowSize);
 
   var historyLength = 512;
   var levelByteData = new Uint8Array(historyLength);
-
-  // var freqDataTexture = new THREE.DataTexture( freqByteData, windowSize, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
-  // freqDataTexture.wrapS = THREE.RepeatWrapping;
-  // freqDataTexture.wrapT = THREE.RepeatWrapping;
-  // freqDataTexture.anisotropy = 6;
-  //
-  // var timeDataTexture = new THREE.DataTexture( timeByteData, windowSize, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
-  // timeDataTexture.wrapS = THREE.RepeatWrapping;
-  // timeDataTexture.wrapT = THREE.RepeatWrapping;
-  // timeDataTexture.anisotropy = 6;
 
   var levelDataTexture = new THREE.DataTexture( levelByteData, historyLength, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
   levelDataTexture.wrapS = THREE.RepeatWrapping;
   levelDataTexture.wrapT = THREE.RepeatWrapping;
   levelDataTexture.anisotropy = 6;
 
-  // freqDataTexture.needsUpdate = true;
-  // timeDataTexture.needsUpdate = true;
   levelDataTexture.needsUpdate = true;
 
   Polymer({
@@ -13897,14 +13884,6 @@ THREE.Shape.Utils.triangulateShape = (function() {
         type: String,
         notify: true
       },
-      // freqDataTexture: {
-      //   type: THREE.DataTexture,
-      //   value: freqDataTexture
-      // },
-      // timeDataTexture: {
-      //   type: THREE.DataTexture,
-      //   value: timeDataTexture
-      // },
       levelDataTexture: {
         type: THREE.DataTexture,
         value: levelDataTexture
@@ -13913,8 +13892,6 @@ THREE.Shape.Utils.triangulateShape = (function() {
     update: function () {
       if (analyser) {
         analyser.getByteFrequencyData(freqByteData);
-    		// analyser.getByteTimeDomainData(timeByteData); // <-- waveform
-
         //GET AVG LEVEL
     		sum = 0;
     		level = 0;
@@ -13927,11 +13904,7 @@ THREE.Shape.Utils.triangulateShape = (function() {
           levelByteData[j] = levelByteData[j - 1];
     		}
         levelByteData[0] = level;
-
-        // this.freqDataTexture.needsUpdate = true;
-        // this.timeDataTexture.needsUpdate = true;
         this.levelDataTexture.needsUpdate = true;
-
       }
     },
     ready: function () {
@@ -14014,41 +13987,166 @@ THREE.Shape.Utils.triangulateShape = (function() {
 <script>
 (function () {
 
-  var animations = [];
+  var animations = [], min = 0;
+
+  var Field = function(texture, parameters){
+
+    this.size = parameters.size;
+    this.grid = Math.ceil(Math.pow(this.size, 1/3));
+    this.intensity = 0.25;
+
+    var _this = this;
+    this.texture = THREE.ImageUtils.loadTexture(texture);
+    this.texture.wrapS = THREE.ClampToEdgeWrapping
+    this.texture.wrapT = THREE.ClampToEdgeWrapping;
+    this.texture.magFilter = THREE.LinearFilter;
+    this.texture.minFilter = THREE.LinearFilter;
+    if (parameters.tiled){
+      this.texture.wrapS = THREE.RepeatWrapping;
+      this.texture.wrapT = THREE.RepeatWrapping;
+    }
+
+    this.transform = new THREE.Mesh(
+      new THREE.CubeGeometry(1, 1, 1),
+      new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true})
+    );
+    this.transform.material.visible = false;
+
+    this.transform.scale.set(10, 10, 10);
+    this.transform.position.y = 3.5;
+    this.transform.position.z = 30;
+    this.transform.position.x = 0;
+    this.transform.updateMatrixWorld();
+
+  }
+  var field = new Field("images/noise_mid.png", {size: 512});
+
+  var animationShader = new THREE.ShaderMaterial({
+
+    uniforms: {
+      "ftex": { type: "t", value: field.texture },
+      "fgrid": { type: "f", value: field.grid },
+      "fintensity": { type: "f", value: field.intensity },
+      "ftrans": { type: "m4", value: field.transform.matrixWorld },
+      "finvTrans": { type: "m4", value: new THREE.Matrix4().getInverse(field.transform.matrixWorld.clone()) },
+		},
+
+		vertexShader: [
+      "uniform sampler2D ftex;",
+			"uniform float     fgrid;",
+			"uniform float     fintensity;",
+			"uniform mat4      ftrans;",
+			"uniform mat4      finvTrans;",
+
+      "varying vec3 col;",
+
+      "vec3 getTiles(vec3 pos, float grid){",
+			"	float z = (pos.z+0.5)*grid*grid;",
+			"	float tile1 = floor(z);",
+			"	float bias = abs(z-tile1);",
+			"	float tile2 = (tile1 > z) ? tile1 + 1.0 : tile1 - 1.0;",
+			"	return vec3(tile1, tile2, bias);",
+			"}",
+
+      "vec2 uvFromPos(vec3 pos, float tile, float grid){",
+			"	return vec2(",
+			"			+(pos.x+0.5)/grid",
+			"			+floor(tile / grid) / grid,",
+			"			+(pos.y+0.5)/grid",
+			"		  +mod(tile, grid) / grid",
+			"		);",
+			"}",
+
+      "vec3 getPosition(sampler2D tPositions, mat4 trans, vec2 uv){",
+			"	vec3 pos = texture2D(tPositions, uv).xyz - vec3(0.5);",
+			"	pos = (trans * vec4(pos, 1.0)).xyz;",
+			"	return pos;",
+			"}",
+
+      "vec3 getField(sampler2D tPositions, mat4 trans, mat4 invTrans, vec3 pos, float grid, float intensity){",
+			"	vec3 posOldInv = (invTrans * vec4(pos, 1.0)).xyz;",
+		  "	vec3 tiles = getTiles(posOldInv, grid);",
+		  "	vec3 sample1 = texture2D(tPositions, uvFromPos(posOldInv, tiles.x, grid)).xyz;",
+		  "	vec3 sample2 = texture2D(tPositions, uvFromPos(posOldInv, tiles.y, grid)).xyz;",
+      "	vec3 field = (sample1*tiles.z + sample2*(1.0-tiles.z) - vec3(0.5)) * intensity;",
+      // "	return field;",
+      "	return (mat4(trans[0], trans[1], trans[2], vec4(0.,0.,0.,1.0)) * vec4(field, 1.0)).xyz;",
+			"}",
+
+			"void main() {",
+
+      " vec4 mvPosition = modelMatrix * vec4(position, 1.0);",
+
+      " float intensity = max(0.0, abs(mvPosition.x / 25.) - fintensity);",
+
+      " vec3 field = getField(ftex, ftrans, finvTrans, mvPosition.xyz, fgrid, intensity);",
+
+      " field.y *= 3.0;",
+
+      " col = mix(vec3(1.0), abs(field), intensity);",
+
+      " gl_Position = projectionMatrix * viewMatrix * (mvPosition + vec4(field, 0.0));",
+
+			"}"
+
+		].join("\n"),
+
+		fragmentShader: [
+
+      "varying vec3 col;",
+
+			"void main() {",
+
+			"	gl_FragColor = vec4(col, 1.0);",
+
+			"}"
+
+		].join("\n")
+
+  });
 
   var Animation = function (word) {
-    var geometry = new THREE.TextGeometry( word, {
 
-      size: 3,
+    var geometry = new THREE.TextGeometry(word, {
+
+      size: 1,
       height: 0.1,
-      curveSegments: 4,
+      curveSegments: 1,
 
       font: "droid sans",
       weight: "normal",
       style: "normal",
 
-      bevelThickness: 0.1,
-      bevelSize: 0.15,
+      bevelThickness: 0.02,
+      bevelSize: 0.015,
       bevelEnabled: true,
-
-      // material: 0,
-      // extrudeMaterial: 1
-
     });
 
-    var material = new THREE.MeshNormalMaterial();
+    geometry.computeBoundingBox();
+
+    var material = new THREE.ShaderMaterial({
+      uniforms: animationShader.uniforms,
+      // uniforms: THREE.UniformsUtils.clone(animationShader.uniforms),
+      vertexShader: animationShader.vertexShader,
+      fragmentShader: animationShader.fragmentShader,
+      wireframe: true
+    });
+    material.uniforms.ftex.value = field.texture;
 
     THREE.Mesh.call(this, geometry, material);
-    // THREE.TextHelper.call(this, word);
 
+    min = 0;
 
+    for(var i = 0; i < animations.length; i++) {
+      min = Math.min(min, animations[i].position.x - 1);
+    }
 
     this.position.y = 3.5;
     this.position.z = 30;
-    this.position.x = -25;
+    this.position.x = - geometry.boundingBox.max.x - Math.max(20, -min);
 
     this.update = function() {
-      this.position.x += 0.2;
+      this.position.x += 0.05;
       if (this.position.x > 50) {
         animations.splice(animations.indexOf(this), 1);
         this.parent.remove(this);
@@ -14057,7 +14155,6 @@ THREE.Shape.Utils.triangulateShape = (function() {
   };
 
   Animation.prototype = Object.create(THREE.Mesh.prototype);
-  // Animation.prototype = Object.create(THREE.TextHelper.prototype);
   Animation.prototype.constructor = Animation;
 
   Polymer({
@@ -14072,10 +14169,13 @@ THREE.Shape.Utils.triangulateShape = (function() {
       for(var i = 0; i < animations.length; i++) {
         animations[i].update();
       }
+      field.transform.rotation.x += 0.005;
+      field.transform.updateMatrixWorld();
     },
     addAnimation: function (scene, word) {
       var animation = new Animation(word);
       scene.add(animation);
+      scene.add(field.transform);
       animations.push(animation);
     }
   });

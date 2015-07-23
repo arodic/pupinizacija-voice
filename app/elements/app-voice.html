@@ -29,28 +29,15 @@
 
   var windowSize = 512;
   var freqByteData = new Uint8Array(windowSize);
-  // var timeByteData = new Uint8Array(windowSize);
 
   var historyLength = 512;
   var levelByteData = new Uint8Array(historyLength);
-
-  // var freqDataTexture = new THREE.DataTexture( freqByteData, windowSize, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
-  // freqDataTexture.wrapS = THREE.RepeatWrapping;
-  // freqDataTexture.wrapT = THREE.RepeatWrapping;
-  // freqDataTexture.anisotropy = 6;
-  //
-  // var timeDataTexture = new THREE.DataTexture( timeByteData, windowSize, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
-  // timeDataTexture.wrapS = THREE.RepeatWrapping;
-  // timeDataTexture.wrapT = THREE.RepeatWrapping;
-  // timeDataTexture.anisotropy = 6;
 
   var levelDataTexture = new THREE.DataTexture( levelByteData, historyLength, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
   levelDataTexture.wrapS = THREE.RepeatWrapping;
   levelDataTexture.wrapT = THREE.RepeatWrapping;
   levelDataTexture.anisotropy = 6;
 
-  // freqDataTexture.needsUpdate = true;
-  // timeDataTexture.needsUpdate = true;
   levelDataTexture.needsUpdate = true;
 
   Polymer({
@@ -60,14 +47,6 @@
         type: String,
         notify: true
       },
-      // freqDataTexture: {
-      //   type: THREE.DataTexture,
-      //   value: freqDataTexture
-      // },
-      // timeDataTexture: {
-      //   type: THREE.DataTexture,
-      //   value: timeDataTexture
-      // },
       levelDataTexture: {
         type: THREE.DataTexture,
         value: levelDataTexture
@@ -76,8 +55,6 @@
     update: function () {
       if (analyser) {
         analyser.getByteFrequencyData(freqByteData);
-    		// analyser.getByteTimeDomainData(timeByteData); // <-- waveform
-
         //GET AVG LEVEL
     		sum = 0;
     		level = 0;
@@ -90,11 +67,7 @@
           levelByteData[j] = levelByteData[j - 1];
     		}
         levelByteData[0] = level;
-
-        // this.freqDataTexture.needsUpdate = true;
-        // this.timeDataTexture.needsUpdate = true;
         this.levelDataTexture.needsUpdate = true;
-
       }
     },
     ready: function () {

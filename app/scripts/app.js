@@ -7,7 +7,7 @@
   app.scene = new THREE.Scene();
 
   app.camera = new THREE.PerspectiveCamera(90, 2, 0.1, 1000);
-  app.camera.position.set(0, 3, 40);
+  app.camera.position.set(0, 4, 40);
   app.camera.lookAt(new THREE.Vector3());
 
   // SCENE
@@ -103,9 +103,6 @@
 
 
   app.addEventListener('dom-change', function() {
-
-    // this.$.viewport.scene = app.scene;
-    // connect audio data texture;
     terrainShader.uniforms.audio.value = app.$.voice.levelDataTexture;
     loop();
   });
