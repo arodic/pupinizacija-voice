@@ -167,7 +167,7 @@
     this.position.x = - geometry.boundingBox.max.x - Math.max(20, -min);
 
     this.update = function() {
-      this.position.x += 0.05;
+      this.position.x += 0.025;
       if (this.position.x > 50) {
         animations.splice(animations.indexOf(this), 1);
         this.parent.remove(this);
@@ -180,12 +180,6 @@
 
   Polymer({
     is: 'app-animation',
-    properties: {
-      scene: {
-        value: new THREE.Scene(),
-        type: THREE.Scene
-      }
-    },
     update: function () {
       for(var i = 0; i < animations.length; i++) {
         animations[i].update();
