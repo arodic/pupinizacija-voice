@@ -27,18 +27,26 @@
   var analyser, voice, stream, microphone, source;
   var binCount, levelBins;
 
-  var windowSize = 512;
+  var windowSize = 1024;
   var freqByteData = new Uint8Array(windowSize);
+  var timeByteData = new Uint8Array(windowSize);
 
-  var historyLength = 512;
-  var levelByteData = new Uint8Array(historyLength);
+  var levelHistoryData = new Uint8Array(windowSize);
+  var levelHistoryTexture = new THREE.DataTexture( levelHistoryData, windowSize, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
+  levelHistoryTexture.wrapS = THREE.RepeatWrapping;
+  levelHistoryTexture.wrapT = THREE.RepeatWrapping;
+  levelHistoryTexture.anisotropy = 6;
+  levelHistoryTexture.needsUpdate = true;
 
-  var levelDataTexture = new THREE.DataTexture( levelByteData, historyLength, 1, THREE.LuminanceFormat, THREE.UnsignedByteType )
-  levelDataTexture.wrapS = THREE.RepeatWrapping;
-  levelDataTexture.wrapT = THREE.RepeatWrapping;
-  levelDataTexture.anisotropy = 6;
+  var waveHistoryData = new Float32Array(windowSize);
+  var waveHistoryTexture = new THREE.DataTexture( waveHistoryData, windowSize, 1, THREE.LuminanceFormat, THREE.FloatType )
+  waveHistoryTexture.wrapS = THREE.RepeatWrapping;
+  waveHistoryTexture.wrapT = THREE.RepeatWrapping;
+  waveHistoryTexture.needsUpdate = true;
 
-  levelDataTexture.needsUpdate = true;
+  var w_samp = 128; // 8
+  var w_step = windowSize / w_samp; // 128
+
 
   Polymer({
     is: 'app-voice',
@@ -47,14 +55,20 @@
         type: String,
         notify: true
       },
-      levelDataTexture: {
+      levelHistoryTexture: {
         type: THREE.DataTexture,
-        value: levelDataTexture
+        value: levelHistoryTexture
+      },
+      waveHistoryTexture: {
+        type: THREE.DataTexture,
+        value: waveHistoryTexture
       }
     },
     update: function () {
       if (analyser) {
         analyser.getByteFrequencyData(freqByteData);
+        analyser.getByteTimeDomainData(timeByteData);
+
         //GET AVG LEVEL
     		sum = 0;
     		level = 0;
@@ -63,11 +77,28 @@
     		}
     		level = sum / windowSize;
 
-        for(j = historyLength; j > 0; j--) {
-          levelByteData[j] = levelByteData[j - 1];
+
+        for(j = windowSize; j > 0; j--) {
+          levelHistoryData[j] = levelHistoryData[j - 1];
     		}
-        levelByteData[0] = level;
-        this.levelDataTexture.needsUpdate = true;
+        levelHistoryData[0] = level;
+        this.levelHistoryTexture.needsUpdate = true;
+
+        for(j = windowSize; j > 0; j = j - w_step) {
+          for(i = 0; i < w_step; i++) {
+            waveHistoryData[j - i] = waveHistoryData[j - i - w_step];
+          }
+        }
+
+        for(i = 0; i < w_step; i++) {
+          waveHistoryData[i] = timeByteData[i * w_samp] / 128 - 1;
+        }
+
+        window.freqByteData = freqByteData;
+        window.waveHistoryData = waveHistoryData;
+        window.timeByteData = timeByteData;
+
+        this.waveHistoryTexture.needsUpdate = true;
       }
     },
     ready: function () {
@@ -76,9 +107,19 @@
 
       voice = this.$.webspeech;
 
-      this.result = replaceL2C('Pritisni dugme!');
+      this.result = replaceL2C('Podigni slušalicu!');
 
-      // TODO: Dodaj ostale reci
+      navigator.getUserMedia({audio: true}, function(str) {
+        stream = str;
+        microphone = context.createMediaStreamSource(str);
+        source = context.createBufferSource();
+      	analyser = context.createAnalyser();
+      	analyser.fftSize = windowSize;
+      	analyser.smoothingTimeConstant = 0.1;
+      	microphone.connect(analyser);
+      }, function () {
+        scope.result = replaceL2C('Greška u aktivaciji mikrofona!');
+      });
 
       var startSpeech = function() {
         if (running) {
@@ -86,30 +127,14 @@
         }
         voice.recognition.lang = 'sr';
         voice.start();
-
-        navigator.getUserMedia({audio: true}, function(str) {
-          stream = str;
-          microphone = context.createMediaStreamSource(str);
-          source = context.createBufferSource();
-					analyser = context.createAnalyser();
-					analyser.fftSize = 1024;
-					analyser.smoothingTimeConstant = 0.3;
-					microphone.connect(analyser);
-        }, function () {
-          scope.result = replaceL2C('Greska u aktiviranju mikrofona!');
-        });
-
       };
 
       var endSpeech = function() {
         voice.stop();
-        stream.stop();
       };
 
-      document.addEventListener('keydown', startSpeech);
       document.addEventListener('mousedown', startSpeech);
-      document.addEventListener('_keyup', endSpeech);
-      document.addEventListener('_mouseup', endSpeech);
+      document.addEventListener('mouseup', endSpeech);
     },
     onResult: function () {
       result = event.detail.result;
@@ -127,19 +152,17 @@
       this.$.webspeech.text = '';
     },
     onEnd: function () {
-      this.result = replaceL2C('Slušanje prekinuto.');
+      this.result = replaceL2C('[stop]');
       voice.stop();
-      stream.stop();
       running = false;
     },
     onStart: function () {
-      this.result = replaceL2C('Slušam...');
+      this.result = replaceL2C('[start]');
       running = true;
     },
     onError: function () {
       this.result = replaceL2C('Greška u slušanju.');
       voice.stop();
-      stream.stop();
       running = false;
     }
   });

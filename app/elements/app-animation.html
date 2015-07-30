@@ -147,10 +147,8 @@
 
     var material = new THREE.ShaderMaterial({
       uniforms: animationShader.uniforms,
-      // uniforms: THREE.UniformsUtils.clone(animationShader.uniforms),
       vertexShader: animationShader.vertexShader,
       fragmentShader: animationShader.fragmentShader,
-      wireframe: true
     });
     material.uniforms.ftex.value = field.texture;
 
@@ -167,7 +165,7 @@
     this.position.x = - geometry.boundingBox.max.x - Math.max(20, -min);
 
     this.update = function() {
-      this.position.x += 0.025;
+      this.position.x += 0.04;
       if (this.position.x > 50) {
         animations.splice(animations.indexOf(this), 1);
         this.parent.remove(this);
