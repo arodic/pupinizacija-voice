@@ -2,11 +2,11 @@
 
   var app = document.querySelector('#app');
   app.width = window.innerWidth;
-  app.height = Math.floor(app.width / 2);
+  app.height =  window.innerHeight;
 
   app.scene = new THREE.Scene();
 
-  app.camera = new THREE.PerspectiveCamera(90, 2, 0.1, 1000);
+  app.camera = new THREE.PerspectiveCamera(90, app.width/app.height, 0.1, 1000);
   app.camera.position.set(0, 4, 40);
   app.camera.lookAt(new THREE.Vector3());
 
@@ -170,7 +170,9 @@
 
   window.addEventListener('resize', function() {
     app.width = window.innerWidth;
-    app.height = Math.floor(app.width / 2);
+    app.height = window.innerHeight;
+    app.camera.aspect = app.width/app.height;
+    app.camera.updateProjectionMatrix();
   });
 
   app.onResultChanged = function (event) {
