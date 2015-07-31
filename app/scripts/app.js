@@ -42,9 +42,9 @@
 
       " dist = distance(uv * vec2(1.0, 0.5), vec2(0.35, 0.05));",
 
-      " float audioColor = texture2D( audio, vec2(dist, 0.0) ).r;",
+      " float audioColor = texture2DLod( audio, vec2(dist, 0.0), 2.0 ).r;",
 
-      " float offset = texture2D( displace, uv ).r * 45.0 + audioColor * 3.0;",
+      " float offset = texture2D( displace, uv ).r * 45.0 + audioColor * 4.0;",
 
       " vec4 mvPosition = modelViewMatrix * vec4( position + vec3(0.0, 0.0, offset), 1.0 );",
 
@@ -67,7 +67,7 @@
       " vec4 texelColor = 10.0 * texture2D( map, vUv * vec2(150.0, 75.0) );",
       " float audioColor = texture2D( audio, vec2(dist, 0.0) ).r;",
 
-			"	gl_FragColor = vec4( texelColor.rgb * (1.0 + 15.0 * audioColor), 1.0 );",
+			"	gl_FragColor = vec4( texelColor.rgb * (1.0 + 10.0 * audioColor), 1.0 );",
 
 			"}"
 
@@ -85,26 +85,37 @@
 
   var lineShader = new THREE.ShaderMaterial({
 
-    uniforms: {
+    uniforms: THREE.UniformsUtils.merge([{
 
       "audio" : { type: "t", value: null }
 
-    },
+    }, field.uniforms]),
 
     vertexShader: [
 
+      field.shaderChunk.params,
+
       "uniform sampler2D audio;",
-      // "varying vec2 vUv;",
+
+      field.shaderChunk.functions,
+
+      "varying vec2 vUv;",
 
       "void main() {",
 
-      // " vUv = uv;",
+      "vUv = uv;",
 
-      " float offset = texture2D( audio, vec2(uv.x, 0.0) ).r * 3.;",
+      " float offset = texture2D( audio, vec2(uv.x, 0.0) ).r * 22.;",
 
-      " vec4 mvPosition = modelViewMatrix * vec4( position + vec3(0.0, offset, 0.0), 1.0 );",
+      " vec4 mvPosition = modelMatrix * vec4( position + vec3(0.0, offset, 0.0), 1.0 );",
 
-      " gl_Position = projectionMatrix * mvPosition;",
+      " float intensity = max(0.0, abs(mvPosition.x / 25.) - fintensity);",
+
+      " vec3 field = getField(ftex, ftrans, finvTrans, mvPosition.xyz, fgrid, intensity);",
+
+      " field.y *= 3.0;",
+
+      " gl_Position = projectionMatrix * viewMatrix * (mvPosition + vec4(field, 0.0));",
 
       "}"
 
@@ -113,17 +124,21 @@
     fragmentShader: [
 
       "uniform sampler2D audio;",
-      // "varying vec2 vUv;",
+
+      "varying vec2 vUv;",
 
       "void main() {",
 
-      // " float offset = texture2D( audio, vec2(vUv.x, 0.0) ).r;",
+      " float alpha = min(1.0, abs(texture2D( audio, vec2(vUv.x, 0.0) ).r * 1000.));",
 
-      "	gl_FragColor = vec4( 1.0 );",
+      "	gl_FragColor = vec4( 1.0, 1.0, 1.0, alpha );",
 
       "}"
 
-    ].join("\n")
+    ].join("\n"),
+
+    transparent: true,
+    depthTest: false
 
   });
 
@@ -132,7 +147,7 @@
 	var positions = new Float32Array( segments * 3 );
 	var uv = new Float32Array( segments * 2 );
 	for ( var i = 0; i < segments; i ++ ) {
-		var x = -20 + (i / segments) * 40;
+		var x = -30 + (i / segments) * 60;
 		var y = 3.5;
 		var z = 30;
 		// positions
@@ -163,6 +178,14 @@
   };
 
   var loop = function () {
+
+    lineShader.uniforms.ftex.value = field.texture;
+    lineShader.uniforms.ftrans.value = field.uniforms.ftrans.value;
+    lineShader.uniforms.finvTrans.value = field.uniforms.finvTrans.value;
+
+    lineShader.uniforms.audio.value = app.$.voice.waveHistoryTexture;
+    terrainShader.uniforms.audio.value = app.$.voice.levelHistoryTexture;
+
     requestAnimationFrame(loop);
     app.$.animation.update();
     app.$.voice.update();
@@ -172,8 +195,6 @@
 
 
   app.addEventListener('dom-change', function() {
-    lineShader.uniforms.audio.value = app.$.voice.waveHistoryTexture;
-    terrainShader.uniforms.audio.value = app.$.voice.levelHistoryTexture;
     loop();
   });
 
