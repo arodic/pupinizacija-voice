@@ -187,6 +187,10 @@
     app.height = window.innerHeight;
     rtLeft = new THREE.WebGLRenderTarget(app.width, app.height, rtParams);
     rtRight = new THREE.WebGLRenderTarget(app.width, app.height, rtParams);
+
+    quadLeft.material.map = rtLeft;
+    quadRight.material.map = rtRight;
+
     app.camera.aspect = app.width/app.height;
     app.camera.updateProjectionMatrix();
   });
