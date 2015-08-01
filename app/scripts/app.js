@@ -4,6 +4,20 @@
   app.width = window.innerWidth;
   app.height =  window.innerHeight;
 
+  var rtParams = {minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat};
+  var rtLeft = new THREE.WebGLRenderTarget(app.width, app.height, rtParams);
+  var rtRight = new THREE.WebGLRenderTarget(app.width, app.height, rtParams);
+
+  var sceneScreen = new THREE.Scene();
+  var quadLeft = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1), new THREE.MeshBasicMaterial({map: rtLeft}));
+  quadLeft.position.x = -0.5;
+  sceneScreen.add( quadLeft );
+  var quadRight = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1), new THREE.MeshBasicMaterial({map: rtRight}));
+  quadRight.position.x = 0.5;
+  sceneScreen.add( quadRight );
+
+  var cameraScreen = new THREE.OrthographicCamera( -1, 1, 0.5, -0.5, -100, 100 );
+
   app.scene = new THREE.Scene();
 
   app.camera = new THREE.PerspectiveCamera(90, app.width/app.height, 0.1, 1000);
@@ -171,6 +185,8 @@
   window.addEventListener('resize', function() {
     app.width = window.innerWidth;
     app.height = window.innerHeight;
+    rtLeft = new THREE.WebGLRenderTarget(app.width, app.height, rtParams);
+    rtRight = new THREE.WebGLRenderTarget(app.width, app.height, rtParams);
     app.camera.aspect = app.width/app.height;
     app.camera.updateProjectionMatrix();
   });
@@ -180,7 +196,6 @@
   };
 
   var loop = function () {
-
     lineShader.uniforms.ftex.value = field.texture;
     lineShader.uniforms.ftrans.value = field.uniforms.ftrans.value;
     lineShader.uniforms.finvTrans.value = field.uniforms.finvTrans.value;
@@ -189,10 +204,27 @@
     terrainShader.uniforms.audio.value = app.$.voice.levelHistoryTexture;
 
     requestAnimationFrame(loop);
+
     app.$.animation.update();
+
     app.$.voice.update();
+    app.$.renderer.autoClear = true;
+    app.$.renderer.autoClearDepth = true;
+    app.$.renderer.autoClearColor = true;
+    app.$.renderer.autoClearAlpha = true;
+    app.$.renderer.autoClearStencil = true;
+
     app.$.renderer.clear();
-    app.$.renderer.render(app.scene, app.camera);
+
+    var overscan = 1.05;
+
+    app.camera.setViewOffset(app.width, app.height, 0, 0, app.width/2 * overscan, app.height);
+    app.$.renderer.render(app.scene, app.camera, rtLeft, true);
+
+    app.camera.setViewOffset(app.width, app.height, app.width/2 - overscan, 0, app.width/2 * overscan, app.height);
+    app.$.renderer.render(app.scene, app.camera, rtRight, true);
+
+    app.$.renderer.render(sceneScreen, cameraScreen);
   };
 
 
