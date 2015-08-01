@@ -14179,13 +14179,14 @@ THREE.Shape.Utils.triangulateShape = (function() {
       uniforms: animationShader.uniforms,
       vertexShader: animationShader.vertexShader,
       fragmentShader: animationShader.fragmentShader,
+      wireframe: true
     });
 
     material.uniforms.ftex.value = field.texture;
     material.uniforms.ftrans.value = field.uniforms.ftrans.value;
     material.uniforms.finvTrans.value = field.uniforms.finvTrans.value;
 
-    THREE.Mesh.call(this, geometry, material);
+    THREE.LineSegments.call(this, geometry, material);
 
     min = 0;
 

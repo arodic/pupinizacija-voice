@@ -9,10 +9,20 @@
   var rtRight = new THREE.WebGLRenderTarget(app.width, app.height, rtParams);
 
   var sceneScreen = new THREE.Scene();
-  var quadLeft = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1), new THREE.MeshBasicMaterial({map: rtLeft}));
+  var quadLeft = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1),
+   new THREE.MeshBasicMaterial({
+     map: rtLeft,
+     alphaMap: THREE.ImageUtils.loadTexture("images/maskLeft.png"),
+     transparent: true
+   }));
   quadLeft.position.x = -0.5;
   sceneScreen.add( quadLeft );
-  var quadRight = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1), new THREE.MeshBasicMaterial({map: rtRight}));
+  var quadRight = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1),
+   new THREE.MeshBasicMaterial({
+     map: rtRight,
+     alphaMap: THREE.ImageUtils.loadTexture("images/maskRight.png"),
+     transparent: true
+    }));
   quadRight.position.x = 0.5;
   sceneScreen.add( quadRight );
 
@@ -119,7 +129,7 @@
 
       "vUv = uv;",
 
-      " float offset = texture2D( audio, vec2(uv.x, 0.0) ).r * 22.;",
+      " float offset = texture2D( audio, vec2(uv.x, 0.0) ).r * 8.;",
 
       " vec4 mvPosition = modelMatrix * vec4( position + vec3(0.0, offset, 0.0), 1.0 );",
 
