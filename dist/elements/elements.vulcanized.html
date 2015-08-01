@@ -14046,7 +14046,7 @@ THREE.Shape.Utils.triangulateShape = (function() {
 
       voice = this.$.webspeech;
 
-      this.result = replaceL2C('#');
+      this.result = replaceL2C('Podigni slušalicu!');
 
       navigator.getUserMedia({audio: true}, function(str) {
         stream = str;
@@ -14073,7 +14073,7 @@ THREE.Shape.Utils.triangulateShape = (function() {
       };
 
       document.addEventListener('mousedown', startSpeech);
-      // document.addEventListener('mouseup', endSpeech);
+      document.addEventListener('mouseup', endSpeech);
     },
     onResult: function () {
       result = event.detail.result;
@@ -14091,12 +14091,12 @@ THREE.Shape.Utils.triangulateShape = (function() {
       this.$.webspeech.text = '';
     },
     onEnd: function () {
-      this.result = '';
+      this.result = 'stop';
       voice.stop();
       running = false;
     },
     onStart: function () {
-      this.result = '';
+      this.result = 'start';
       running = true;
     },
     onError: function () {
