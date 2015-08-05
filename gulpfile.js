@@ -55,6 +55,30 @@ gulp.task('elements', function () {
   return styleTask('elements', ['**/*.css']);
 });
 
+// Lint JavaScript
+gulp.task('jshint', function () {
+  return gulp.src([
+      'app/scripts/**/*.js',
+      'app/elements/**/*.js',
+      'app/elements/**/*.html'
+    ])
+    .pipe(reload({stream: true, once: true}))
+    .pipe($.jshint.extract()) // Extract JS from .html files
+    .pipe($.jshint())
+    .pipe($.jshint.reporter('jshint-stylish'))
+    .pipe($.if(!browserSync.active, $.jshint.reporter('fail')));
+});
+
+// Optimize Images
+gulp.task('images', function () {
+  return gulp.src('app/images/**/*')
+    .pipe($.cache($.imagemin({
+      progressive: true,
+      interlaced: true
+    })))
+    .pipe(gulp.dest('dist/images'))
+    .pipe($.size({title: 'images'}));
+});
 
 // Copy All Files At The Root Level (app)
 gulp.task('copy', function () {
@@ -70,14 +94,11 @@ gulp.task('copy', function () {
     'bower_components/**/*'
   ]).pipe(gulp.dest('dist/bower_components'));
 
+  var lib = gulp.src(['app/lib/**/*.js'])
+    .pipe(gulp.dest('dist/lib'));
+
   var elements = gulp.src(['app/elements/**/*.html'])
     .pipe(gulp.dest('dist/elements'));
-
-  var elements = gulp.src(['app/scripts/**/*.js'])
-    .pipe(gulp.dest('dist/scripts'));;
-
-  var images = gulp.src(['app/images/**/*.*'])
-    .pipe(gulp.dest('dist/images'));
 
   var swBootstrap = gulp.src(['bower_components/platinum-sw/bootstrap/*.js'])
     .pipe(gulp.dest('dist/elements/bootstrap'));
@@ -89,15 +110,8 @@ gulp.task('copy', function () {
     .pipe($.rename('elements.vulcanized.html'))
     .pipe(gulp.dest('dist/elements'));
 
-  return merge(app, bower, elements, images, vulcanized, swBootstrap, swToolbox)
+  return merge(app, bower, lib, elements, vulcanized, swBootstrap, swToolbox)
     .pipe($.size({title: 'copy'}));
-});
-
-// Copy Web Fonts To Dist
-gulp.task('fonts', function () {
-  return gulp.src(['app/fonts/**'])
-    .pipe(gulp.dest('dist/fonts'))
-    .pipe($.size({title: 'fonts'}));
 });
 
 // Scan Your HTML For Assets & Optimize Them
@@ -161,7 +175,7 @@ gulp.task('precache', function (callback) {
 gulp.task('clean', del.bind(null, ['.tmp', 'dist']));
 
 // Watch Files For Changes & Reload
-gulp.task('serve', ['styles', 'elements'], function () {
+gulp.task('serve', ['styles', 'elements', 'images'], function () {
   browserSync({
     notify: false,
     logPrefix: 'PSK',
@@ -173,9 +187,6 @@ gulp.task('serve', ['styles', 'elements'], function () {
         }
       }
     },
-    // Run as an https by uncommenting 'https: true'
-    // Note: this uses an unsigned certificate which on first access
-    //       will present a certificate warning in the browser.
     https: true,
     server: {
       baseDir: ['.tmp', 'app'],
@@ -187,10 +198,29 @@ gulp.task('serve', ['styles', 'elements'], function () {
   });
 
   gulp.watch(['app/**/*.html'], reload);
-  gulp.watch(['app/scripts/**/*.js'], reload);
   gulp.watch(['app/styles/**/*.css'], ['styles', reload]);
   gulp.watch(['app/elements/**/*.css'], ['elements', reload]);
+  gulp.watch(['app/{scripts,elements}/**/*.js'], ['jshint']);
   gulp.watch(['app/images/**/*'], reload);
+});
+
+// Build and serve the output from the dist build
+gulp.task('serve:dist', ['default'], function () {
+  browserSync({
+    notify: false,
+    logPrefix: 'PSK',
+    snippetOptions: {
+      rule: {
+        match: '<span id="browser-sync-binding"></span>',
+        fn: function (snippet) {
+          return snippet;
+        }
+      }
+    },
+    https: true,
+    server: 'dist',
+    middleware: [ historyApiFallback() ]
+  });
 });
 
 // Build Production Files, the Default Task
@@ -198,7 +228,7 @@ gulp.task('default', ['clean'], function (cb) {
   runSequence(
     ['copy', 'styles'],
     'elements',
-    ['fonts', 'html'],
+    ['jshint', 'images', 'html'],
     'vulcanize',
     cb);
     // Note: add , 'precache' , after 'vulcanize', if your are going to use Service Worker

@@ -1,4 +1,4 @@
-(function(document, THREE) {
+(function() {
 
   var app = document.querySelector('#app');
   app.width = window.innerWidth;
@@ -12,21 +12,21 @@
   var quadLeft = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1),
    new THREE.MeshBasicMaterial({
      map: rtLeft,
-     alphaMap: THREE.ImageUtils.loadTexture("images/maskLeft.png"),
+     alphaMap: THREE.ImageUtils.loadTexture('images/maskLeft.png'),
      transparent: true
    }));
   quadLeft.position.x = -0.5;
-  sceneScreen.add( quadLeft );
+  sceneScreen.add(quadLeft);
   var quadRight = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1),
    new THREE.MeshBasicMaterial({
      map: rtRight,
-     alphaMap: THREE.ImageUtils.loadTexture("images/maskRight.png"),
+     alphaMap: THREE.ImageUtils.loadTexture('images/maskRight.png'),
      transparent: true
     }));
   quadRight.position.x = 0.5;
-  sceneScreen.add( quadRight );
+  sceneScreen.add(quadRight);
 
-  var cameraScreen = new THREE.OrthographicCamera( -1, 1, 0.5, -0.5, -100, 100 );
+  var cameraScreen = new THREE.OrthographicCamera(-1, 1, 0.5, -0.5, -100, 100);
 
   app.scene = new THREE.Scene();
 
@@ -35,67 +35,67 @@
   app.camera.lookAt(new THREE.Vector3());
 
   // SCENE
-  var terrainTexture = THREE.ImageUtils.loadTexture( "images/grid.png" );
+  var terrainTexture = THREE.ImageUtils.loadTexture('images/grid.png');
   terrainTexture.wrapS = THREE.RepeatWrapping;
   terrainTexture.wrapT = THREE.RepeatWrapping;
   terrainTexture.anisotropy = 6;
 
-  var displaceTexture = THREE.ImageUtils.loadTexture( "images/displace.jpg" );
+  var displaceTexture = THREE.ImageUtils.loadTexture('images/displace.jpg');
 
   var terrainShader = new THREE.ShaderMaterial({
 
     uniforms: {
 
-      "map" : { type: "t", value: terrainTexture },
-      "displace" : { type: "t", value: displaceTexture },
-      "audio" : { type: "t", value: null }
+      'map' : { type: 't', value: terrainTexture },
+      'displace' : { type: 't', value: displaceTexture },
+      'audio' : { type: 't', value: null }
 
 		},
 
 		vertexShader: [
 
-			"uniform sampler2D displace;",
-			"uniform sampler2D audio;",
+			'uniform sampler2D displace;',
+			'uniform sampler2D audio;',
 
-			"varying vec2 vUv;",
-			"varying float dist;",
+			'varying vec2 vUv;',
+			'varying float dist;',
 
-			"void main() {",
+			'void main() {',
 
-      " vUv = uv;",
+      ' vUv = uv;',
 
-      " dist = distance(uv * vec2(1.0, 0.5), vec2(0.35, 0.05));",
+      ' dist = distance(uv * vec2(1.0, 0.5), vec2(0.35, 0.05));',
 
-      " float audioColor = texture2DLod( audio, vec2(dist, 0.0), 2.0 ).r;",
+      ' float audioColor = texture2DLod(audio, vec2(dist, 0.0), 2.0).r;',
 
-      " float offset = texture2D( displace, uv ).r * 45.0 + audioColor * 4.0;",
+      ' float offset = texture2D(displace, uv).r * 45.0 + audioColor * 4.0;',
 
-      " vec4 mvPosition = modelViewMatrix * vec4( position + vec3(0.0, 0.0, offset), 1.0 );",
+      ' vec4 mvPosition = modelViewMatrix * vec4(position + vec3(0.0, 0.0, offset), 1.0);',
 
-      " gl_Position = projectionMatrix * mvPosition;",
+      ' gl_Position = projectionMatrix * mvPosition;',
 
-			"}"
+			'}'
 
-		].join("\n"),
+		].join('\n'),
 
 		fragmentShader: [
 
-			"uniform sampler2D map;",
-			"uniform sampler2D audio;",
+			'uniform sampler2D map;',
+			'uniform sampler2D audio;',
 
-			"varying vec2 vUv;",
-			"varying float dist;",
+			'varying vec2 vUv;',
+			'varying float dist;',
 
-			"void main() {",
+			'void main() {',
 
-      " vec4 texelColor = 10.0 * texture2D( map, vUv * vec2(150.0, 75.0) );",
-      " float audioColor = texture2D( audio, vec2(dist, 0.0) ).r;",
+      ' vec4 texelColor = 10.0 * texture2D(map, vUv * vec2(150.0, 75.0));',
+      ' float audioColor = texture2D(audio, vec2(dist, 0.0)).r;',
 
-			"	gl_FragColor = vec4( texelColor.rgb * (1.0 + 10.0 * audioColor), 1.0 );",
+			'	gl_FragColor = vec4(texelColor.rgb * (1.0 + 10.0 * audioColor), 1.0);',
 
-			"}"
+			'}'
 
-		].join("\n")
+		].join('\n')
 
   });
 
@@ -111,7 +111,7 @@
 
     uniforms: THREE.UniformsUtils.merge([{
 
-      "audio" : { type: "t", value: null }
+      'audio' : { type: 't', value: null }
 
     }, field.uniforms]),
 
@@ -119,47 +119,47 @@
 
       field.shaderChunk.params,
 
-      "uniform sampler2D audio;",
+      'uniform sampler2D audio;',
 
       field.shaderChunk.functions,
 
-      "varying vec2 vUv;",
+      'varying vec2 vUv;',
 
-      "void main() {",
+      'void main() {',
 
-      "vUv = uv;",
+      'vUv = uv;',
 
-      " float offset = texture2D( audio, vec2(uv.x, 0.0) ).r * 8.;",
+      ' float offset = texture2D(audio, vec2(uv.x, 0.0)).r * 8.;',
 
-      " vec4 mvPosition = modelMatrix * vec4( position + vec3(0.0, offset, 0.0), 1.0 );",
+      ' vec4 mvPosition = modelMatrix * vec4(position + vec3(0.0, offset, 0.0), 1.0);',
 
-      " float intensity = max(0.0, abs(mvPosition.x / 25.) - fintensity);",
+      ' float intensity = max(0.0, abs(mvPosition.x / 25.) - fintensity);',
 
-      " vec3 field = getField(ftex, ftrans, finvTrans, mvPosition.xyz, fgrid, intensity);",
+      ' vec3 field = getField(ftex, ftrans, finvTrans, mvPosition.xyz, fgrid, intensity);',
 
-      " field.y *= 3.0;",
+      ' field.y *= 3.0;',
 
-      " gl_Position = projectionMatrix * viewMatrix * (mvPosition + vec4(field, 0.0));",
+      ' gl_Position = projectionMatrix * viewMatrix * (mvPosition + vec4(field, 0.0));',
 
-      "}"
+      '}'
 
-    ].join("\n"),
+    ].join('\n'),
 
     fragmentShader: [
 
-      "uniform sampler2D audio;",
+      'uniform sampler2D audio;',
 
-      "varying vec2 vUv;",
+      'varying vec2 vUv;',
 
-      "void main() {",
+      'void main() {',
 
-      " float alpha = min(1.0, abs(texture2D( audio, vec2(vUv.x, 0.0) ).r * 1000.));",
+      ' float alpha = min(1.0, abs(texture2D(audio, vec2(vUv.x, 0.0)).r * 1000.));',
 
-      "	gl_FragColor = vec4( 1.0, 1.0, 1.0, alpha );",
+      '	gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);',
 
-      "}"
+      '}'
 
-    ].join("\n"),
+    ].join('\n'),
 
     transparent: true,
     depthTest: false
@@ -168,9 +168,9 @@
 
   var segments = 2048;
 	var geometry = new THREE.BufferGeometry();
-	var positions = new Float32Array( segments * 3 );
-	var uv = new Float32Array( segments * 2 );
-	for ( var i = 0; i < segments; i ++ ) {
+	var positions = new Float32Array(segments * 3);
+	var uv = new Float32Array(segments * 2);
+	for (var i = 0; i < segments; i ++) {
 		var x = -30 + (i / segments) * 60;
 		var y = 3.5;
 		var z = 30;
@@ -182,14 +182,14 @@
 		uv[ i * 2 ] = i / segments;
 		uv[ i * 2 + 1 ] = i / segments;
 	}
-	geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-	geometry.addAttribute( 'uv', new THREE.BufferAttribute( uv, 2 ) );
+	geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+	geometry.addAttribute('uv', new THREE.BufferAttribute(uv, 2));
 	geometry.computeBoundingSphere();
 
   var line = new THREE.Line(
     geometry,
     lineShader
-  );
+);
   app.scene.add(line);
 
   window.addEventListener('resize', function() {
@@ -246,4 +246,4 @@
     loop();
   });
 
-})(document, THREE);
+}());

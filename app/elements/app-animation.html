@@ -1,5 +1,3 @@
-<script src="../scripts/droid_sans_regular.typeface.js"></script>
-
 <dom-module id="app-animation"></dom-module>
 <script>
 (function () {
@@ -13,39 +11,39 @@
 		vertexShader: [
       field.shaderChunk.params,
 
-      "varying vec3 col;",
+      'varying vec3 col;',
 
       field.shaderChunk.functions,
 
-			"void main() {",
+			'void main() {',
 
-      " vec4 mvPosition = modelMatrix * vec4(position, 1.0);",
+      ' vec4 mvPosition = modelMatrix * vec4(position, 1.0);',
 
-      " float intensity = max(0.0, abs(mvPosition.x / 25.) - fintensity);",
+      ' float intensity = max(0.0, abs(mvPosition.x / 25.) - fintensity);',
 
-      " vec3 field = getField(ftex, ftrans, finvTrans, mvPosition.xyz, fgrid, intensity);",
+      ' vec3 field = getField(ftex, ftrans, finvTrans, mvPosition.xyz, fgrid, intensity);',
 
-      " field.y *= 3.0;",
+      ' field.y *= 3.0;',
 
-      " col = mix(vec3(1.0), abs(field), intensity);",
+      ' col = mix(vec3(1.0), abs(field), intensity);',
 
-      " gl_Position = projectionMatrix * viewMatrix * (mvPosition + vec4(field, 0.0));",
+      ' gl_Position = projectionMatrix * viewMatrix * (mvPosition + vec4(field, 0.0));',
 
-			"}"
+			'}'
 
-		].join("\n"),
+		].join('\n'),
 
 		fragmentShader: [
 
-      "varying vec3 col;",
+      'varying vec3 col;',
 
-			"void main() {",
+			'void main() {',
 
-			"	gl_FragColor = vec4(col, 1.0);",
+			'	gl_FragColor = vec4(col, 1.0);',
 
-			"}"
+			'}'
 
-		].join("\n")
+		].join('\n')
 
   });
 
@@ -57,9 +55,9 @@
       height: 0.1,
       curveSegments: 1,
 
-      font: "droid sans",
-      weight: "normal",
-      style: "normal",
+      font: 'droid sans',
+      weight: 'normal',
+      style: 'normal',
 
       bevelThickness: 0.02,
       bevelSize: 0.015,
