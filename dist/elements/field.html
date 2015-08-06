@@ -1,5 +1,4 @@
 <script>
-(function(THREE) {
 
   var field = {
     size: 512,
@@ -87,5 +86,4 @@
     this.uniforms.finvTrans.value = new THREE.Matrix4().getInverse(this.transform.matrixWorld.clone());
   };
 
-}());
 </script>
