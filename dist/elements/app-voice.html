@@ -34,14 +34,20 @@
   levelHistoryTexture.wrapT = THREE.RepeatWrapping;
   levelHistoryTexture.anisotropy = 6;
   levelHistoryTexture.needsUpdate = true;
-  levelHistoryTexture.generateMipmaps = true;
+  levelHistoryTexture.generateMipmaps = false;
+  levelHistoryTexture.magFilter = THREE.NearestFilter;
+  levelHistoryTexture.minFilter = THREE.NearestFilter;
+
 
   var waveHistoryData = new Float32Array(windowSize);
   var waveHistoryTexture = new THREE.DataTexture(waveHistoryData, windowSize, 1, THREE.LuminanceFormat, THREE.FloatType);
   waveHistoryTexture.wrapS = THREE.RepeatWrapping;
   waveHistoryTexture.wrapT = THREE.RepeatWrapping;
   waveHistoryTexture.needsUpdate = true;
-  waveHistoryTexture.generateMipmaps = true;
+  waveHistoryTexture.generateMipmaps = false;
+  waveHistoryTexture.magFilter = THREE.NearestFilter;
+  waveHistoryTexture.minFilter = THREE.NearestFilter;
+
 
   var wSamp = 512; // 8
   var wStep = windowSize / wSamp; // 128
@@ -163,12 +169,12 @@
       this.$.webspeech.text = '';
     },
     onEnd: function () {
-      this.result = 'stop';
+      this.result = '';
       voice.stop();
       running = false;
     },
     onStart: function () {
-      this.result = 'start';
+      this.result = '';
       running = true;
     },
     onError: function () {

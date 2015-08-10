@@ -59,6 +59,7 @@
 
 			'varying vec2 vUv;',
 			'varying float dist;',
+			'varying float depth;',
 
 			'void main() {',
 
@@ -71,6 +72,8 @@
       ' float offset = texture2D(displace, uv).r * 45.0 + audioColor * 4.0;',
 
       ' vec4 mvPosition = modelViewMatrix * vec4(position + vec3(0.0, 0.0, offset), 1.0);',
+
+      ' depth = length(mvPosition.xyz) / 20.;',
 
       ' gl_Position = projectionMatrix * mvPosition;',
 
@@ -85,10 +88,11 @@
 
 			'varying vec2 vUv;',
 			'varying float dist;',
+			'varying float depth;',
 
 			'void main() {',
 
-      ' vec4 texelColor = 10.0 * texture2D(map, vUv * vec2(150.0, 75.0));',
+      ' vec4 texelColor = (1.0 + depth) * 15.0 * texture2D(map, vUv * vec2(150.0, 75.0));',
       ' float audioColor = texture2D(audio, vec2(dist, 0.0)).r;',
 
 			'	gl_FragColor = vec4(texelColor.rgb * (1.0 + 10.0 * audioColor), 1.0);',
