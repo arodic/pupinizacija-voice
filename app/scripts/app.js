@@ -190,11 +190,12 @@
 	geometry.addAttribute('uv', new THREE.BufferAttribute(uv, 2));
 	geometry.computeBoundingSphere();
 
-  var line = new THREE.Line(
-    geometry,
-    lineShader
-);
-  app.scene.add(line);
+  // var line = new THREE.Line(
+  //   geometry,
+  //   lineShader
+  // );
+  // waveform line
+  // app.scene.add(line);
 
   window.addEventListener('resize', function() {
     app.width = window.innerWidth;
