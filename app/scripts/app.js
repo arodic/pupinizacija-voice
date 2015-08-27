@@ -197,7 +197,7 @@
   // waveform line
   // app.scene.add(line);
 
-  window.addEventListener('resize', function() {
+  var resizeApp = function() {
     app.width = window.innerWidth;
     app.height = window.innerHeight;
     rtLeft = new THREE.WebGLRenderTarget(app.width, app.height, rtParams);
@@ -208,7 +208,13 @@
 
     app.camera.aspect = app.width/app.height;
     app.camera.updateProjectionMatrix();
-  });
+  };
+
+  window.addEventListener('resize', resizeApp);
+
+  setTimeout(function () {
+    resizeApp();
+  }, 3000);
 
   app.onResultChanged = function (event) {
     this.$.animation.addAnimation(this.scene, event.detail.value);
