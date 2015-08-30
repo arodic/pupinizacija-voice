@@ -97,6 +97,9 @@ gulp.task('copy', function () {
   var images = gulp.src(['app/images/**/*'])
     .pipe(gulp.dest('dist/images'));
 
+  var images = gulp.src(['app/audio/**/*'])
+    .pipe(gulp.dest('dist/audio'));
+
   var lib = gulp.src(['app/lib/**/*.js'])
     .pipe(gulp.dest('dist/lib'));
 
@@ -178,7 +181,7 @@ gulp.task('precache', function (callback) {
 gulp.task('clean', del.bind(null, ['.tmp', 'dist']));
 
 // Watch Files For Changes & Reload
-gulp.task('serve', ['styles', 'elements', 'images'], function () {
+gulp.task('serve', function () {
   browserSync({
     notify: false,
     logPrefix: 'PSK',

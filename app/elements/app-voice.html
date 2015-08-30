@@ -1,5 +1,6 @@
 <dom-module id="app-voice">
   <template>
+    <audio src="../audio/saysomething.mp3" preload="auto" id="audio"></audio>
     <voice-recognition id="webspeech"
         on-result="onResult"
         on-end="onEnd"
@@ -169,15 +170,19 @@
       this.$.webspeech.text = '';
     },
     onEnd: function () {
+      this.$.audio.pause();
       this.result = '';
       voice.stop();
       running = false;
     },
     onStart: function () {
+      this.$.audio.currentTime = 0;
+      this.$.audio.play();
       this.result = '';
       running = true;
     },
     onError: function () {
+      this.$.audio.pause();
       this.result = replaceL2C('Greška u slušanju.');
       voice.stop();
       running = false;
