@@ -15,7 +15,7 @@
   ],
   "dependencies": {
     "voice-elements": "zenorocha/voice-elements#~1.0.0",
-    "three-renderer": "arodic/three-renderer#master"
+    "three-renderer": "arodic/three-renderer#d475e5a74c72746d44d513805a97e698dc05da00"
   },
   "resolutions": {
     "three-renderer": "master"
